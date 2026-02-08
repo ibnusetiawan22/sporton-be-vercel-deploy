@@ -7,32 +7,16 @@ dotenv.config();
 const PORT = process.env.PORT || "5001";
 const MONGO_URI = process.env.MONGO_URI || "no-mongo-uri";
 
-const startServer = (note?: string): void => {
-  if (note) {
-    console.warn(note);
-  }
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-};
-
-const isMissingMongoUri =
-  MONGO_URI === "no-mongo-uri" ||
-  MONGO_URI.includes("<db_password>");
-
-if (isMissingMongoUri) {
-  startServer(
-    "MongoDB connection skipped: MONGO_URI is missing or contains <db_password>.",
-  );
-} else {
-  mongoose
-    .connect(MONGO_URI)
-    .then(() => {
-      console.log("Connected to MongoDB");
-      startServer();
-    })
-    .catch((error) => {
-      console.error("Error connecting to MongoDB:", error);
-      startServer("Starting server without MongoDB connection.");
+mongoose
+  .connect(MONGO_URI, {
+    family: 4,           // Force IPv4 (avoids IPv6 handshake issues)
+    authSource: 'admin', // Explicitly tell it where to look for the user
+    retryWrites: true
+  })
+  .then(() => {
+    console.log("Connected to MongoDB");
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
     });
-}
+  })
+  .catch((error) => console.error("Error connecting to MongoDB:", error));

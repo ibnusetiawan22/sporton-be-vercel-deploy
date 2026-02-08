@@ -47,8 +47,7 @@ export const initiateAdmin = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const { email, password } = req.body;
-    const name = req.body.name ?? req.body.nama;
+    const { email, password, name } = req.body;
 
     // Check if user data / entry is exist
     const count = await User.countDocuments({});
